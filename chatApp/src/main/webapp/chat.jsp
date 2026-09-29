@@ -3,8 +3,7 @@
     pageEncoding="UTF-8"%>
 
 <%
-    String username =
-        (String) session.getAttribute("username");
+    String username = (String) session.getAttribute("username");
 
     if (username == null) {
         response.sendRedirect("login.jsp");
@@ -22,7 +21,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Simple Chat</title>
+    <title>Nexa - Messaging</title>
 
     <link rel="stylesheet"
           href="<%= request.getContextPath() %>/css/style.css">
@@ -30,35 +29,663 @@
     <style>
 
         /* =====================================================
-           CHAT V2
+           NEXA CHAT UI
            ===================================================== */
 
-        .chat-top-actions {
+        .chat-app {
+            width: 100%;
+            height: 100vh;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            overflow: hidden;
         }
 
-        .chat-action-btn {
-            width: 38px;
-            height: 38px;
+
+        /* =====================================================
+           SIDEBAR
+           ===================================================== */
+
+        .chat-sidebar {
+            width: 365px;
+            min-width: 365px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e7e8ef;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+
+        .sidebar-header {
+            height: 82px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            border-bottom: 1px solid #ececf2;
+        }
+
+
+        .app-logo {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #5b5bd6,
+                    #7650c9
+                );
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            border: none;
-            border-radius: 10px;
+            color: white;
+            font-size: 22px;
 
-            background: #f5f6fa;
-            color: #656978;
+            box-shadow:
+                0 8px 20px
+                rgba(91, 91, 214, .20);
+        }
+
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 17px;
+            color: #202231;
+            font-weight: 750;
+            letter-spacing: -.3px;
+        }
+
+
+        .sidebar-header span {
+            display: block;
+            margin-top: 3px;
+            font-size: 10px;
+            color: #969aa9;
+        }
+
+
+        /* =====================================================
+           CURRENT USER
+           ===================================================== */
+
+        .current-user {
+            margin: 20px 20px 14px;
+
+            padding: 14px;
+
+            border: 1px solid #e5e6ed;
+            border-radius: 15px;
+
+            background: #fafbfe;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .current-user-info {
+            min-width: 0;
+        }
+
+
+        .current-user-info strong {
+            display: block;
+            color: #272936;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+
+        .current-user-info > span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 4px;
+            color: #9a9eaa;
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           AVATARS
+           ===================================================== */
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+
+        .avatar-purple {
+            background:
+                linear-gradient(
+                    135deg,
+                    #6366df,
+                    #7955c9
+                );
+        }
+
+
+        .avatar-blue {
+            background:
+                linear-gradient(
+                    135deg,
+                    #3b82f6,
+                    #6366df
+                );
+        }
+
+
+        .avatar-random {
+            background:
+                linear-gradient(
+                    135deg,
+                    #6366df,
+                    #7651c8
+                );
+        }
+
+
+        .online-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
+        }
+
+
+        /* =====================================================
+           SEARCH
+           ===================================================== */
+
+        .contact-search {
+            margin: 0 15px 15px;
+            position: relative;
+        }
+
+
+        .contact-search input {
+            width: 100%;
+            height: 43px;
+
+            padding:
+                0 14px 0 40px;
+
+            box-sizing: border-box;
+
+            border: 1px solid #e3e5ed;
+            border-radius: 12px;
+
+            background: #f8f9fc;
+
+            color: #292b36;
+
+            outline: none;
+
+            font-size: 12px;
+
+            transition: .2s ease;
+        }
+
+
+        .contact-search input:focus {
+            background: white;
+
+            border-color: #6565dc;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(101, 101, 220, .10);
+        }
+
+
+        .search-icon {
+            position: absolute;
+
+            left: 14px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            font-size: 13px;
+            color: #969baa;
+
+            pointer-events: none;
+        }
+
+
+        /* =====================================================
+           CONTACT HEADER
+           ===================================================== */
+
+        .users-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 20px 10px;
+
+            color: #9094a2;
+
+            font-size: 10px;
+            font-weight: 750;
+
+            letter-spacing: .7px;
+        }
+
+
+        #userCount {
+            min-width: 22px;
+            height: 22px;
+
+            padding: 0 6px;
+
+            border-radius: 7px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #eeeeff;
+            color: #5d5dd7;
+
+            font-size: 9px;
+        }
+
+
+        /* =====================================================
+           USER LIST
+           ===================================================== */
+
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+
+            padding: 0 10px 15px;
+        }
+
+
+        .user-item {
+            width: 100%;
+
+            border: none;
+
+            background: transparent;
+
+            padding: 11px 10px;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            text-align: left;
 
             cursor: pointer;
 
-            font-size: 15px;
-
-            transition: 0.2s ease;
+            transition:
+                background .18s ease,
+                transform .18s ease;
         }
+
+
+        .user-item:hover {
+            background: #f7f7fd;
+        }
+
+
+        .user-item.active {
+            background: #eeeeff;
+        }
+
+
+        .user-item-details {
+            min-width: 0;
+            flex: 1;
+        }
+
+
+        .user-item-details strong {
+            display: block;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            color: #292b36;
+
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+
+        .user-item-details span {
+            display: flex;
+            align-items: center;
+
+            gap: 5px;
+
+            margin-top: 4px;
+
+            color: #9a9daa;
+
+            font-size: 9px;
+        }
+
+
+        .loading-users,
+        .no-users,
+        .user-error {
+            padding: 35px 15px;
+
+            text-align: center;
+
+            color: #a0a4b1;
+
+            font-size: 11px;
+        }
+
+
+        .user-error {
+            color: #dc5555;
+            line-height: 1.6;
+        }
+
+
+        .retry-button {
+            margin-top: 10px;
+
+            border: none;
+
+            padding: 7px 12px;
+
+            border-radius: 8px;
+
+            background: #eeeeff;
+            color: #5b5bd6;
+
+            cursor: pointer;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           SIDEBAR FOOTER
+           ===================================================== */
+
+        .sidebar-footer {
+            padding: 16px;
+
+            border-top: 1px solid #ececf2;
+        }
+
+
+        .logout-btn {
+            width: 100%;
+            height: 44px;
+
+            border: 1px solid #e5e6ed;
+            border-radius: 11px;
+
+            background: white;
+
+            color: #666a78;
+
+            text-decoration: none;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            font-size: 11px;
+
+            transition: .2s ease;
+        }
+
+
+        .logout-btn:hover {
+            background: #f7f7fb;
+            color: #5b5bd6;
+        }
+
+
+        /* =====================================================
+           MAIN CHAT
+           ===================================================== */
+
+        .chat-main {
+            flex: 1;
+
+            min-width: 0;
+
+            height: 100vh;
+
+            background: #f7f8fc;
+
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* =====================================================
+           EMPTY STATE
+           ===================================================== */
+
+        .empty-chat {
+            flex: 1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+        }
+
+
+        .welcome-content {
+            max-width: 450px;
+            padding: 30px;
+        }
+
+
+        .empty-chat-icon {
+            width: 82px;
+            height: 82px;
+
+            margin: 0 auto 25px;
+
+            border-radius: 24px;
+
+            background: #eeeeff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 32px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(91,91,214,.08);
+        }
+
+
+        .welcome-content h2 {
+            margin: 0 0 9px;
+
+            color: #20222d;
+
+            font-size: 22px;
+            font-weight: 750;
+        }
+
+
+        .welcome-content p {
+            margin: 0;
+
+            color: #9a9eac;
+
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+
+        /* =====================================================
+           ACTIVE CHAT
+           ===================================================== */
+
+        .active-chat {
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .hidden {
+            display: none !important;
+        }
+
+
+        /* =====================================================
+           CHAT HEADER
+           ===================================================== */
+
+        .chat-header {
+            height: 82px;
+            flex-shrink: 0;
+
+            padding: 0 24px;
+
+            background: white;
+
+            border-bottom: 1px solid #e5e6ed;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            min-width: 0;
+        }
+
+
+        .chat-header-details {
+            min-width: 0;
+        }
+
+
+        .chat-header-details h2 {
+            margin: 0;
+
+            color: #20222d;
+
+            font-size: 14px;
+            font-weight: 750;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+
+        .chat-header-details span {
+            display: block;
+
+            margin-top: 4px;
+
+            color: #9a9eac;
+
+            font-size: 10px;
+        }
+
+
+        .chat-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+
+        .connection-status {
+            height: 30px;
+
+            padding: 0 11px;
+
+            border-radius: 20px;
+
+            background: #edf9f2;
+
+            color: #2e9d59;
+
+            display: flex;
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 9px;
+        }
+
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #25c465;
+        }
+
+
+        .chat-action-btn {
+            width: 36px;
+            height: 36px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: #f4f5f9;
+
+            color: #777b89;
+
+            cursor: pointer;
+
+            font-size: 18px;
+        }
+
 
         .chat-action-btn:hover {
             background: #eeeeff;
@@ -66,156 +693,186 @@
         }
 
 
-        /* SEARCH */
+        .mobile-back {
+            display: none;
 
-        .contact-search {
-            margin: 0 14px 14px;
-            position: relative;
-        }
+            width: 35px;
+            height: 35px;
 
-        .contact-search input {
-            width: 100%;
-            height: 40px;
-
-            padding: 0 13px 0 38px;
-
-            border: 1px solid #e5e6ed;
-            border-radius: 11px;
-
-            background: #f8f9fc;
-
-            outline: none;
-
-            font-size: 12px;
-            color: #242633;
-
-            box-sizing: border-box;
-        }
-
-        .contact-search input:focus {
-            background: #fff;
-            border-color: #5b5bd6;
-            box-shadow: 0 0 0 3px rgba(91,91,214,.08);
-        }
-
-        .search-icon {
-            position: absolute;
-
-            left: 13px;
-            top: 50%;
-
-            transform: translateY(-50%);
-
-            color: #999eab;
-
-            font-size: 13px;
-        }
-
-
-        /* PROFILE */
-
-        .profile-menu {
-            position: relative;
-        }
-
-        .profile-button {
             border: none;
-            background: transparent;
+            border-radius: 9px;
+
+            background: #f1f2f6;
+
             cursor: pointer;
+
+            color: #555968;
+
+            font-size: 18px;
         }
 
 
-        /* CHAT HEADER */
+        /* =====================================================
+           MESSAGES
+           ===================================================== */
 
-        .chat-header-left {
+        .messages-area {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 25px 30px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .no-messages {
+            margin: auto;
+
+            text-align: center;
+        }
+
+
+        .no-message-icon {
+            width: 58px;
+            height: 58px;
+
+            margin: 0 auto 14px;
+
+            border-radius: 17px;
+
+            background: #eeeeff;
+
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 0;
-        }
+            justify-content: center;
 
-        .chat-header-details {
-            min-width: 0;
-        }
-
-        .chat-header-details h2 {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 23px;
         }
 
 
-        /* MESSAGE META */
+        .no-messages h3 {
+            margin: 0;
+
+            color: #555968;
+
+            font-size: 15px;
+        }
+
+
+        .no-messages p {
+            margin-top: 6px;
+
+            color: #a0a4af;
+
+            font-size: 11px;
+        }
+
+
+        /* =====================================================
+           MESSAGE ROWS
+           ===================================================== */
+
+        .message-row {
+            width: 100%;
+
+            display: flex;
+
+            margin-bottom: 12px;
+        }
+
+
+        .message-row.sent {
+            justify-content: flex-end;
+        }
+
+
+        .message-row.received {
+            justify-content: flex-start;
+        }
+
+
+        .message-bubble {
+            max-width: min(600px, 72%);
+
+            padding: 11px 14px;
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 2px 7px
+                rgba(0,0,0,.03);
+        }
+
+
+        .message-row.sent .message-bubble {
+            background: #6366dc;
+
+            color: white;
+
+            border-bottom-right-radius: 4px;
+        }
+
+
+        .message-row.received .message-bubble {
+            background: white;
+
+            color: #31333e;
+
+            border: 1px solid #e8e9ef;
+
+            border-bottom-left-radius: 4px;
+        }
+
+
+        .message-sender {
+            font-size: 9px;
+
+            font-weight: 700;
+
+            margin-bottom: 4px;
+
+            opacity: .7;
+        }
+
+
+        .message-text {
+            font-size: 12px;
+
+            line-height: 1.55;
+
+            white-space: pre-wrap;
+
+            word-break: break-word;
+        }
+
 
         .message-meta {
             display: flex;
+
             align-items: center;
             justify-content: flex-end;
+
             gap: 5px;
 
             margin-top: 5px;
 
-            font-size: 9px;
+            font-size: 8px;
+
             opacity: .55;
         }
+
 
         .message-check {
             font-size: 10px;
         }
 
 
-        /* WELCOME */
-
-        .welcome-content {
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .welcome-content .empty-chat-icon {
-            margin-bottom: 22px;
-        }
-
-        .welcome-content h2 {
-            margin-bottom: 8px;
-        }
-
-
-        /* COMPOSER */
-
-        .composer-button {
-            width: 42px;
-            height: 48px;
-
-            flex-shrink: 0;
-
-            border: none;
-            border-radius: 13px;
-
-            background: #f1f2f7;
-            color: #747887;
-
-            cursor: pointer;
-
-            font-size: 17px;
-
-            transition: .2s ease;
-        }
-
-        .composer-button:hover {
-            background: #eeeeff;
-            color: #5b5bd6;
-        }
-
-        .message-input-wrapper {
-            position: relative;
-        }
-
-        .message-input-wrapper input {
-            padding-right: 10px;
-        }
-
-
-        /* TYPING */
+        /* =====================================================
+           TYPING
+           ===================================================== */
 
         .typing-indicator {
             min-height: 18px;
@@ -227,44 +884,228 @@
             font-size: 10px;
         }
 
-        .typing-indicator.hidden {
-            visibility: hidden;
+
+        /* =====================================================
+           MESSAGE COMPOSER
+           ===================================================== */
+
+        .message-area {
+            flex-shrink: 0;
+
+            padding: 13px 20px 10px;
+
+            background: white;
+
+            border-top: 1px solid #e5e6ed;
         }
 
 
-        /* MOBILE BACK */
+        .message-form {
+            display: flex;
 
-        .mobile-back {
-            display: none;
+            align-items: center;
 
-            width: 34px;
-            height: 34px;
+            gap: 8px;
+        }
+
+
+        .composer-button {
+            width: 43px;
+            height: 43px;
+
+            flex-shrink: 0;
 
             border: none;
-            border-radius: 9px;
 
-            background: #f2f3f7;
+            border-radius: 12px;
+
+            background: #f1f2f7;
+
+            color: #747887;
 
             cursor: pointer;
 
-            color: #555968;
+            font-size: 20px;
+        }
+
+
+        .composer-button:hover {
+            background: #eeeeff;
+            color: #5b5bd6;
+        }
+
+
+        .message-input-wrapper {
+            flex: 1;
+        }
+
+
+        .message-input-wrapper input {
+            width: 100%;
+            height: 43px;
+
+            box-sizing: border-box;
+
+            padding: 0 14px;
+
+            border: 1px solid #dedfe8;
+
+            border-radius: 12px;
+
+            background: #fafbfe;
+
+            color: #292b36;
+
+            outline: none;
+
+            font-size: 12px;
+        }
+
+
+        .message-input-wrapper input:focus {
+            background: white;
+
+            border-color: #6565dc;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(101,101,220,.08);
+        }
+
+
+        .send-button {
+            height: 43px;
+
+            padding: 0 17px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6366df,
+                    #744fc3
+                );
+
+            color: white;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            box-shadow:
+                0 8px 18px
+                rgba(99,102,223,.20);
+        }
+
+
+        .send-button:hover {
+            transform: translateY(-1px);
+        }
+
+
+        .send-icon {
+            font-size: 13px;
+        }
+
+
+        .message-hint {
+            text-align: right;
+
+            margin-top: 6px;
+
+            padding-right: 53px;
+
+            color: #b0b3be;
+
+            font-size: 8px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 800px) {
+
+            .chat-sidebar {
+                width: 300px;
+                min-width: 300px;
+            }
+
+            .message-bubble {
+                max-width: 82%;
+            }
+
         }
 
 
         @media (max-width: 650px) {
 
-            .mobile-back {
-                display: flex;
-                align-items: center;
-                justify-content: center;
+            .chat-sidebar {
+                width: 100%;
+                min-width: 100%;
             }
+
 
             .chat-sidebar.mobile-hidden {
                 display: none;
             }
 
+
             .chat-main.mobile-full {
                 width: 100%;
+            }
+
+
+            .mobile-back {
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+            }
+
+
+            .connection-status {
+                display: none;
+            }
+
+
+            .chat-header {
+                padding: 0 14px;
+            }
+
+
+            .messages-area {
+                padding: 18px 15px;
+            }
+
+
+            .message-area {
+                padding: 10px;
+            }
+
+
+            .message-hint {
+                display: none;
+            }
+
+
+            .composer-button {
+                display: none;
+            }
+
+
+            .send-button {
+                padding: 0 14px;
             }
 
         }
@@ -297,10 +1138,10 @@
 
             <div>
 
-                <h2>Simple Chat</h2>
+                <h2>Nexa</h2>
 
                 <span>
-                    Messaging System
+                    Real-time messaging
                 </span>
 
             </div>
@@ -317,6 +1158,7 @@
                 <%= username.substring(0, 1).toUpperCase() %>
 
             </div>
+
 
             <div class="current-user-info">
 
@@ -369,7 +1211,7 @@
         </div>
 
 
-        <!-- USERS -->
+        <!-- USER LIST -->
 
         <div
             id="userList"
@@ -392,21 +1234,25 @@
 
                 <span>↪</span>
 
-                <span>Logout</span>
+                <span>
+                    Logout
+                </span>
 
             </a>
 
         </div>
 
-    </aside>
 
+    </aside>
 
 
     <!-- =====================================================
          MAIN CHAT
          ===================================================== -->
 
-    <main class="chat-main" id="chatMain">
+    <main
+        class="chat-main"
+        id="chatMain">
 
 
         <!-- EMPTY STATE -->
@@ -422,7 +1268,7 @@
                 </div>
 
                 <h2>
-                    Welcome to Simple Chat
+                    Welcome to Nexa
                 </h2>
 
                 <p>
@@ -435,7 +1281,6 @@
         </div>
 
 
-
         <!-- =================================================
              ACTIVE CHAT
              ================================================= -->
@@ -445,7 +1290,7 @@
             class="active-chat hidden">
 
 
-            <!-- HEADER -->
+            <!-- CHAT HEADER -->
 
             <header class="chat-header">
 
@@ -510,10 +1355,11 @@
 
                     </button>
 
+
                 </div>
 
-            </header>
 
+            </header>
 
 
             <!-- MESSAGES -->
@@ -541,17 +1387,13 @@
             </section>
 
 
-
             <!-- TYPING -->
 
             <div
                 id="typingIndicator"
-                class="typing-indicator hidden">
-
-                Typing...
+                class="typing-indicator">
 
             </div>
-
 
 
             <!-- MESSAGE COMPOSER -->
@@ -601,6 +1443,7 @@
 
                     </button>
 
+
                 </form>
 
 
@@ -616,23 +1459,24 @@
 
         </div>
 
+
     </main>
+
 
 </div>
 
 
-
 <script>
 
-/* =====================================================
+/* =========================================================
    VARIABLES
-   ===================================================== */
+   ========================================================= */
 
 const contextPath =
     "<%= request.getContextPath() %>";
 
 const currentUser =
-    "<%= username %>";
+    "<%= username.replace("\\", "\\\\").replace("\"", "\\\"") %>";
 
 let selectedUser = null;
 
@@ -641,9 +1485,9 @@ let refreshTimer = null;
 let allUsers = [];
 
 
-/* =====================================================
+/* =========================================================
    ELEMENTS
-   ===================================================== */
+   ========================================================= */
 
 const userList =
     document.getElementById("userList");
@@ -685,52 +1529,279 @@ const chatMain =
     document.getElementById("chatMain");
 
 
-/* =====================================================
+/* =========================================================
    LOAD USERS
-   ===================================================== */
+   ========================================================= */
 
 async function loadUsers() {
 
+    userList.innerHTML = `
+        <div class="loading-users">
+            Loading users...
+        </div>
+    `;
+
+
     try {
 
-        const response =
-            await fetch(
-                contextPath +
-                "/ChatEndpoint?action=users"
-            );
+        const response = await fetch(
+            contextPath +
+            "/ChatEndpoint?action=users",
+            {
+                method: "GET",
+                cache: "no-store",
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
+
+
+        console.log(
+            "Users HTTP status:",
+            response.status
+        );
 
 
         if (!response.ok) {
 
             throw new Error(
-                "Unable to load users"
+                "Server returned HTTP " +
+                response.status
             );
 
         }
 
 
-        const users =
-            await response.json();
+        /*
+         * Read text first instead of directly
+         * calling response.json().
+         *
+         * This makes debugging much easier.
+         */
+
+        const rawText =
+            await response.text();
 
 
-        allUsers = users;
+        console.log(
+            "Users API response:",
+            rawText
+        );
+
+
+        if (
+            !rawText ||
+            rawText.trim() === ""
+        ) {
+
+            throw new Error(
+                "The server returned an empty response."
+            );
+
+        }
+
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(rawText);
+
+        } catch (jsonError) {
+
+            console.error(
+                "Invalid JSON:",
+                rawText
+            );
+
+            throw new Error(
+                "ChatEndpoint did not return valid JSON."
+            );
+
+        }
+
+
+        /*
+         * Support multiple formats.
+         *
+         * Format 1:
+         * ["admin","gokul","student"]
+         *
+         * Format 2:
+         * {"users":["admin","gokul","student"]}
+         *
+         * Format 3:
+         * {"data":["admin","gokul","student"]}
+         *
+         * Format 4:
+         * {"usernames":[...]}
+         */
+
+        let users = [];
+
+
+        if (Array.isArray(data)) {
+
+            users = data;
+
+        }
+
+        else if (
+            data &&
+            Array.isArray(data.users)
+        ) {
+
+            users =
+                data.users;
+
+        }
+
+        else if (
+            data &&
+            Array.isArray(data.data)
+        ) {
+
+            users =
+                data.data;
+
+        }
+
+        else if (
+            data &&
+            Array.isArray(data.usernames)
+        ) {
+
+            users =
+                data.usernames;
+
+        }
+
+        else {
+
+            throw new Error(
+                "Unexpected users response format."
+            );
+
+        }
+
+
+        /*
+         * Normalize usernames.
+         */
+
+        allUsers =
+            users
+                .map(function(user) {
+
+                    if (
+                        typeof user === "string"
+                    ) {
+
+                        return user.trim();
+
+                    }
+
+
+                    if (
+                        user &&
+                        typeof user.username === "string"
+                    ) {
+
+                        return user.username.trim();
+
+                    }
+
+
+                    if (
+                        user &&
+                        typeof user.name === "string"
+                    ) {
+
+                        return user.name.trim();
+
+                    }
+
+
+                    return null;
+
+                })
+                .filter(function(user) {
+
+                    return (
+                        user !== null &&
+                        user !== ""
+                    );
+
+                });
+
+
+        /*
+         * Remove current logged-in user.
+         */
+
+        allUsers =
+            allUsers.filter(
+                function(user) {
+
+                    return (
+                        user.toLowerCase() !==
+                        currentUser.toLowerCase()
+                    );
+
+                }
+            );
 
 
         userCount.textContent =
-            users.length;
+            allUsers.length;
 
 
-        renderUsers(users);
+        renderUsers(allUsers);
 
 
-    } catch (error) {
+    }
 
-        console.error(error);
+    catch (error) {
+
+        console.error(
+            "Unable to load users:",
+            error
+        );
+
+
+        userCount.textContent = "0";
+
 
         userList.innerHTML = `
+
             <div class="user-error">
-                Unable to load users
+
+                <strong>
+                    Unable to load contacts
+                </strong>
+
+                <br>
+
+                <small>
+                    ${escapeHtml(error.message)}
+                </small>
+
+                <br>
+
+                <button
+                    type="button"
+                    class="retry-button"
+                    onclick="loadUsers()">
+
+                    Retry
+
+                </button>
+
             </div>
+
         `;
 
     }
@@ -738,44 +1809,55 @@ async function loadUsers() {
 }
 
 
-/* =====================================================
+/* =========================================================
    RENDER USERS
-   ===================================================== */
+   ========================================================= */
 
 function renderUsers(users) {
 
     userList.innerHTML = "";
 
 
-    if (users.length === 0) {
+    if (
+        !users ||
+        users.length === 0
+    ) {
 
         userList.innerHTML = `
+
             <div class="no-users">
+
                 No other users available
+
             </div>
+
         `;
 
         return;
+
     }
 
 
-    users.forEach(function(user) {
+    users.forEach(
+        function(user) {
 
-        createUser(user);
+            createUser(user);
 
-    });
+        }
+    );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    CREATE USER
-   ===================================================== */
+   ========================================================= */
 
 function createUser(user) {
 
     const button =
         document.createElement("button");
+
 
     button.type = "button";
 
@@ -783,9 +1865,13 @@ function createUser(user) {
         "user-item";
 
 
-    if (user === selectedUser) {
+    if (
+        user === selectedUser
+    ) {
 
-        button.classList.add("active");
+        button.classList.add(
+            "active"
+        );
 
     }
 
@@ -793,15 +1879,20 @@ function createUser(user) {
     const avatar =
         document.createElement("div");
 
+
     avatar.className =
         "avatar avatar-random";
 
+
     avatar.textContent =
-        user.charAt(0).toUpperCase();
+        user
+            .charAt(0)
+            .toUpperCase();
 
 
     const details =
         document.createElement("div");
+
 
     details.className =
         "user-item-details";
@@ -810,12 +1901,14 @@ function createUser(user) {
     const name =
         document.createElement("strong");
 
+
     name.textContent =
         user;
 
 
     const status =
         document.createElement("span");
+
 
     status.innerHTML =
         '<span class="online-dot"></span> Available';
@@ -846,9 +1939,9 @@ function createUser(user) {
 }
 
 
-/* =====================================================
+/* =========================================================
    SEARCH USERS
-   ===================================================== */
+   ========================================================= */
 
 userSearch.addEventListener(
     "input",
@@ -864,12 +1957,16 @@ userSearch.addEventListener(
             allUsers.filter(
                 function(user) {
 
-                    return user
+                    return String(user)
                         .toLowerCase()
                         .includes(query);
 
                 }
             );
+
+
+        userCount.textContent =
+            filtered.length;
 
 
         renderUsers(filtered);
@@ -878,9 +1975,9 @@ userSearch.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    SELECT USER
-   ===================================================== */
+   ========================================================= */
 
 function selectUser(user) {
 
@@ -915,20 +2012,29 @@ function selectUser(user) {
     messageInput.focus();
 
 
-    loadUsers();
+    renderUsers(
+        allUsers
+    );
+
 
     loadMessages();
+
 
     startAutoRefresh();
 
 
-    /* Mobile */
+    /*
+     * Mobile
+     */
 
-    if (window.innerWidth <= 650) {
+    if (
+        window.innerWidth <= 650
+    ) {
 
         chatSidebar.classList.add(
             "mobile-hidden"
         );
+
 
         chatMain.classList.add(
             "mobile-full"
@@ -939,17 +2045,20 @@ function selectUser(user) {
 }
 
 
-/* =====================================================
-   SHOW CONTACTS - MOBILE
-   ===================================================== */
+/* =========================================================
+   MOBILE: SHOW CONTACTS
+   ========================================================= */
 
 function showContacts() {
 
-    if (window.innerWidth <= 650) {
+    if (
+        window.innerWidth <= 650
+    ) {
 
         chatSidebar.classList.remove(
             "mobile-hidden"
         );
+
 
         chatMain.classList.remove(
             "mobile-full"
@@ -960,14 +2069,16 @@ function showContacts() {
 }
 
 
-/* =====================================================
+/* =========================================================
    LOAD MESSAGES
-   ===================================================== */
+   ========================================================= */
 
 async function loadMessages() {
 
     if (!selectedUser) {
+
         return;
+
     }
 
 
@@ -975,46 +2086,153 @@ async function loadMessages() {
 
         const response =
             await fetch(
+
                 contextPath +
                 "/ChatEndpoint?action=messages&receiver=" +
                 encodeURIComponent(
                     selectedUser
-                )
+                ),
+
+                {
+                    method: "GET",
+                    cache: "no-store",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+
             );
 
 
         if (!response.ok) {
 
             throw new Error(
-                "Unable to load messages"
+                "Unable to load messages. HTTP " +
+                response.status
             );
 
         }
 
 
-        const data =
-            await response.json();
+        const rawText =
+            await response.text();
 
 
-        displayMessages(data);
+        console.log(
+            "Messages response:",
+            rawText
+        );
 
 
-    } catch (error) {
+        if (
+            !rawText ||
+            rawText.trim() === ""
+        ) {
 
-        console.error(error);
+            displayMessages([]);
+
+            return;
+
+        }
+
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(rawText);
+
+        }
+
+        catch (jsonError) {
+
+            console.error(
+                "Invalid messages JSON:",
+                rawText
+            );
+
+            throw new Error(
+                "Messages response is not valid JSON."
+            );
+
+        }
+
+
+        /*
+         * Support:
+         *
+         * [...]
+         *
+         * {"messages":[...]}
+         *
+         * {"data":[...]}
+         */
+
+        let messageData = [];
+
+
+        if (
+            Array.isArray(data)
+        ) {
+
+            messageData =
+                data;
+
+        }
+
+        else if (
+            data &&
+            Array.isArray(data.messages)
+        ) {
+
+            messageData =
+                data.messages;
+
+        }
+
+        else if (
+            data &&
+            Array.isArray(data.data)
+        ) {
+
+            messageData =
+                data.data;
+
+        }
+
+
+        displayMessages(
+            messageData
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Unable to load messages:",
+            error
+        );
 
     }
 
 }
 
 
-/* =====================================================
+/* =========================================================
    DISPLAY MESSAGES
-   ===================================================== */
+   ========================================================= */
 
 function displayMessages(data) {
 
-    if (!data || data.length === 0) {
+    if (
+        !data ||
+        data.length === 0
+    ) {
 
         messages.innerHTML = `
 
@@ -1038,115 +2256,159 @@ function displayMessages(data) {
         `;
 
         return;
+
     }
 
 
     messages.innerHTML = "";
 
 
-    data.forEach(function(item) {
+    data.forEach(
+        function(item) {
 
 
-        const isMine =
-            item.sender === currentUser;
+            /*
+             * Support different backend field names.
+             */
+
+            const sender =
+                item.sender ||
+                item.from ||
+                item.username ||
+                "";
 
 
-        const messageRow =
-            document.createElement("div");
+            const message =
+                item.message ||
+                item.text ||
+                item.content ||
+                "";
 
 
-        messageRow.className =
-            isMine
-                ? "message-row sent"
-                : "message-row received";
+            const time =
+                item.time ||
+                item.timestamp ||
+                item.createdAt ||
+                "";
 
 
-        const bubble =
-            document.createElement("div");
+            const isMine =
+                String(sender).toLowerCase() ===
+                String(currentUser).toLowerCase();
 
 
-        bubble.className =
-            "message-bubble";
+            const messageRow =
+                document.createElement("div");
 
 
-        const sender =
-            document.createElement("div");
+            messageRow.className =
+                isMine
+                    ? "message-row sent"
+                    : "message-row received";
 
 
-        sender.className =
-            "message-sender";
+            const bubble =
+                document.createElement("div");
 
 
-        sender.textContent =
-            isMine
-                ? "You"
-                : item.sender;
+            bubble.className =
+                "message-bubble";
 
 
-        const text =
-            document.createElement("div");
+            const senderElement =
+                document.createElement("div");
 
 
-        text.className =
-            "message-text";
+            senderElement.className =
+                "message-sender";
 
 
-        text.textContent =
-            item.message;
+            senderElement.textContent =
+                isMine
+                    ? "You"
+                    : sender;
 
 
-        const meta =
-            document.createElement("div");
+            const text =
+                document.createElement("div");
 
 
-        meta.className =
-            "message-meta";
+            text.className =
+                "message-text";
 
 
-        const time =
-            document.createElement("span");
+            text.textContent =
+                message;
 
 
-        time.textContent =
-            item.time;
+            const meta =
+                document.createElement("div");
 
 
-        meta.appendChild(time);
+            meta.className =
+                "message-meta";
 
 
-        if (isMine) {
-
-            const check =
+            const timeElement =
                 document.createElement("span");
 
-            check.className =
-                "message-check";
 
-            check.textContent =
-                "✓";
+            timeElement.textContent =
+                formatMessageTime(time);
 
-            meta.appendChild(check);
+
+            meta.appendChild(
+                timeElement
+            );
+
+
+            if (isMine) {
+
+                const check =
+                    document.createElement("span");
+
+
+                check.className =
+                    "message-check";
+
+
+                check.textContent =
+                    "✓";
+
+
+                meta.appendChild(
+                    check
+                );
+
+            }
+
+
+            bubble.appendChild(
+                senderElement
+            );
+
+
+            bubble.appendChild(
+                text
+            );
+
+
+            bubble.appendChild(
+                meta
+            );
+
+
+            messageRow.appendChild(
+                bubble
+            );
+
+
+            messages.appendChild(
+                messageRow
+            );
 
         }
-
-
-        bubble.appendChild(sender);
-
-        bubble.appendChild(text);
-
-        bubble.appendChild(meta);
-
-
-        messageRow.appendChild(
-            bubble
-        );
-
-
-        messages.appendChild(
-            messageRow
-        );
-
-    });
+    );
 
 
     messages.scrollTop =
@@ -1155,9 +2417,9 @@ function displayMessages(data) {
 }
 
 
-/* =====================================================
+/* =========================================================
    SEND MESSAGE
-   ===================================================== */
+   ========================================================= */
 
 messageForm.addEventListener(
     "submit",
@@ -1184,12 +2446,24 @@ messageForm.addEventListener(
         }
 
 
+        const sendButton =
+            messageForm.querySelector(
+                ".send-button"
+            );
+
+
         try {
+
+            sendButton.disabled =
+                true;
+
 
             const response =
                 await fetch(
+
                     contextPath +
                     "/ChatEndpoint",
+
                     {
 
                         method: "POST",
@@ -1197,34 +2471,52 @@ messageForm.addEventListener(
                         headers: {
 
                             "Content-Type":
-                                "application/x-www-form-urlencoded"
+                                "application/x-www-form-urlencoded; charset=UTF-8",
+
+                            "Accept":
+                                "application/json"
 
                         },
 
                         body:
+
                             "receiver=" +
                             encodeURIComponent(
                                 selectedUser
                             ) +
+
                             "&message=" +
                             encodeURIComponent(
                                 message
                             )
 
                     }
+
                 );
 
 
             if (!response.ok) {
 
                 throw new Error(
-                    "Message could not be sent"
+                    "Message could not be sent. HTTP " +
+                    response.status
                 );
 
             }
 
 
-            messageInput.value = "";
+            const resultText =
+                await response.text();
+
+
+            console.log(
+                "Send response:",
+                resultText
+            );
+
+
+            messageInput.value =
+                "";
 
 
             await loadMessages();
@@ -1233,13 +2525,27 @@ messageForm.addEventListener(
             messageInput.focus();
 
 
-        } catch (error) {
+        }
 
-            console.error(error);
+        catch (error) {
+
+            console.error(
+                "Send message error:",
+                error
+            );
+
 
             alert(
-                "Unable to send message."
+                "Unable to send message.\n\n" +
+                error.message
             );
+
+        }
+
+        finally {
+
+            sendButton.disabled =
+                false;
 
         }
 
@@ -1247,9 +2553,9 @@ messageForm.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    ENTER TO SEND
-   ===================================================== */
+   ========================================================= */
 
 messageInput.addEventListener(
     "keydown",
@@ -1270,9 +2576,9 @@ messageInput.addEventListener(
 );
 
 
-/* =====================================================
+/* =========================================================
    AUTO REFRESH
-   ===================================================== */
+   ========================================================= */
 
 function startAutoRefresh() {
 
@@ -1302,40 +2608,139 @@ function startAutoRefresh() {
 }
 
 
-/* =====================================================
-   ATTACHMENT PLACEHOLDER
-   ===================================================== */
+/* =========================================================
+   ATTACHMENT
+   ========================================================= */
 
 function attachmentMessage() {
 
     alert(
-        "File attachments will be added in the next version."
+        "File attachments will be added in a future version."
     );
 
 }
 
 
-/* =====================================================
-   BASIC HTML ESCAPE
-   ===================================================== */
+/* =========================================================
+   FORMAT MESSAGE TIME
+   ========================================================= */
 
-function escapeHtml(value) {
+function formatMessageTime(value) {
 
-    return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    if (!value) {
+
+        return "";
+
+    }
+
+
+    /*
+     * If backend already gives a simple
+     * formatted time, keep it.
+     */
+
+    if (
+        typeof value === "string" &&
+        !value.includes("T")
+    ) {
+
+        return value;
+
+    }
+
+
+    try {
+
+        const date =
+            new Date(value);
+
+
+        if (
+            isNaN(date.getTime())
+        ) {
+
+            return value;
+
+        }
+
+
+        return date.toLocaleTimeString(
+            [],
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        return value;
+
+    }
 
 }
 
 
-/* =====================================================
-   INITIAL LOAD
-   ===================================================== */
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
 
-loadUsers();
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        loadUsers();
+
+    }
+);
 
 </script>
 
